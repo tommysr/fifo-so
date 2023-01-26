@@ -1,11 +1,10 @@
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include "errno.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "fcntl.h"
 #include "common.h"
+#include <string.h>
+#include "ctype.h"
 
 int main(int argc, char **argv)
 {

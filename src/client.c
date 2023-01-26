@@ -1,11 +1,11 @@
-#include <sys/types.h>
-#include <sys/stat.h>
+
 #include <unistd.h>
 #include "errno.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "fcntl.h"
 #include "common.h"
+#include <string.h>
 
 int main(int argc, char **argv)
 {
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
   create_fifo(client_fifo_name);
 
-  while (1)
+    while (1)
   {
     msg_buff.client_pid = client_pid;
 
@@ -33,13 +33,13 @@ int main(int argc, char **argv)
     msg_buff.content[strcspn(msg_buff.content, "\n")] = '\0';
     write(server_fifo_descriptor, &msg_buff, sizeof(struct Message));
 
-    printf("[C-%d] Sent message: %s\n", msg_buff.content);
+    printf("[C-%d] Sent message: %s\n", msg_buff.client_pid, msg_buff.content);
 
-    client_fifo_descriptor = open(CLIENT_FIFO, O_RDONLY);
+    client_fifo_descriptor = open(client_fifo_name, O_RDONLY);
 
     if (read(client_fifo_descriptor, &msg_buff, sizeof(struct Message)) > 0)
     {
-      printf("[C-%d] Read message: %s\n", msg_buff.content);
+      printf("[C-%d] Read message: %s\n", msg_buff.client_pid, msg_buff.content);
     }
     else
     {
