@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   if (fgets(msg_buff.content, MAX, stdin) == NULL)
   {
     printf("[%s] Read text error\n.", client_indicator);
-    abort_and_exit(server_fifo_descriptor, client_fifo_descriptor, client_fifo_name);
+    abort_without_client_fd(server_fifo_descriptor, client_fifo_name);
   }
 
   // prepare message buffer

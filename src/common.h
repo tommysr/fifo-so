@@ -16,7 +16,6 @@
 #define MAX 10
 
 int create_fifo(const char *name, const char *indicator);
-int open_fifo(const char *name, const int flags);
 
 struct Message
 {
