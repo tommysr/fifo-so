@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
+#include <string.h>
 
 #define SERVER_FIFO "./server_fifo"
 #define CLIENT_FIFO_FORMAT "./client_fifo_%d"
@@ -15,6 +18,7 @@
 #define SERVER_INDICATOR "SERVER"
 #define MAX 10
 
+void exit_with_failure(int status, int server_fd, int client_fd, const char *client_fifo_name);
 int create_fifo(const char *name, const char *indicator);
 
 struct Message
@@ -22,5 +26,6 @@ struct Message
   pid_t client_pid;
   char content[MAX];
 };
+// sizeof(struct Message) should not be bigger than PIPE_BUF variable !!!!
 
 #endif
