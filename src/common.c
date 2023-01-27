@@ -2,7 +2,7 @@
 
 int create_fifo(const char *name, const char *indicator)
 {
-  if (mkfifo(name, 666) == -1)
+  if (mkfifo(name, 0600) == -1)
   {
     if (errno == EEXIST)
     {

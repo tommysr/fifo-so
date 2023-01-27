@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  printf("[%s] opened server fifo in read mode\n.", SERVER_INDICATOR);
+  printf("[%s] opened server fifo in read mode.\n", SERVER_INDICATOR);
   sleep(10); // wait 10 second for clients
 
   while (1)

@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     abort_without_client_fd(server_fifo_descriptor, client_fifo_name);
   }
 
-  printf("[%s] Sent message: %s\n", client_indicator, msg_buff.content);
+  printf("[%s] Sent message: %s \n", client_indicator, msg_buff.content);
 
   // open client fifo in read mode
   client_fifo_descriptor = open(client_fifo_name, O_RDONLY);
