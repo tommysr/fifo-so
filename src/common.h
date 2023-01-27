@@ -18,7 +18,7 @@
 #define SERVER_INDICATOR "SERVER"
 #define MAX 10
 
-void exit_with_failure(int status, int server_fd, int client_fd, const char *client_fifo_name);
+void my_exit(const char *indicator, int failure, int server_fd, int client_fd, const char *fifo_name);
 int create_fifo(const char *name, const char *indicator);
 
 struct Message

@@ -1,35 +1,38 @@
 #include "common.h"
 
-void exit_with_failure(int status, int server_fd, int client_fd, const char *fifo_path)
+void my_exit(const char *indicator, int failure, int server_fd, int client_fd, const char *fifo_name)
 {
-  switch (status)
+  if (server_fd != -1)
   {
-  case 1: // client with not opened client fd
-    close(server_fd);
-    unlink(fifo_path);
+    if (close(server_fd) == -1)
+    {
+      fprintf(stderr, "[%s] server fd close error %s\n", indicator, strerror(errno));
+    }
+  }
+
+  if (client_fd != -1)
+  {
+    if (close(server_fd) == -1)
+    {
+      fprintf(stderr, "[%s] client fd close error %s\n", indicator, strerror(errno));
+    }
+  }
+
+  if (fifo_name)
+  {
+    if (unlink(fifo_name) == -1)
+    {
+      fprintf(stderr, "[%s] unlink fifo %s failed: %s\n", indicator, *fifo_name, strerror(errno));
+    }
+  }
+
+  if (failure)
+  {
     exit(EXIT_FAILURE);
-    break;
-
-  case 2: // client with opened client fd
-    close(server_fd);
-    close(client_fd);
-    unlink(fifo_path);
-    exit(EXIT_FAILURE);
-
-    break;
-
-  case 3: // client with opened client fd
-    close(server_fd);
-    exit(EXIT_FAILURE);
-    break;
-
-  case 4: // client with opened client fd
-    unlink(fifo_path);
-    exit(EXIT_FAILURE);
-    break;
-
-  default:
-    break;
+  }
+  else
+  {
+    exit(EXIT_SUCCESS);
   }
 }
 

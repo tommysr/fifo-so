@@ -29,10 +29,7 @@ int main(int argc, char **argv)
   client_fifo_descriptor = open_client_fifo();
   read_from_client_fifo();
 
-  close(server_fifo_descriptor);
-  close(client_fifo_descriptor);
-  unlink(client_fifo_path);
-  exit(EXIT_SUCCESS);
+  my_exit(client_indicator, 0, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
 }
 
 void read_from_client_fifo()
@@ -40,7 +37,7 @@ void read_from_client_fifo()
   if (read(client_fifo_descriptor, &msg_buff, sizeof(struct Message)) == -1)
   {
     fprintf(stderr, "[%s] Error reading from fifo: %s\n", client_indicator, strerror(errno));
-    exit_with_failure(2, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
   }
   else
   {
@@ -55,7 +52,7 @@ int open_client_fifo()
   if (client_fifo_descriptor == -1)
   {
     fprintf(stderr, "[%s] open client fifo error: %s\n", client_indicator, strerror(errno));
-    exit_with_failure(1, server_fifo_descriptor, NULL, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
   }
 
   return client_fifo_descriptor;
@@ -65,7 +62,7 @@ void write_to_server_fifo()
 {
   if (write(server_fifo_descriptor, &msg_buff, sizeof(struct Message)) == -1)
   {
-    if (errno == EPIPE) // check it
+    if (errno == EPIPE)
     {
       fprintf(stderr, "[%s] reading end of server fifo closed: %s \n", client_indicator, strerror(errno));
     }
@@ -74,7 +71,7 @@ void write_to_server_fifo()
       fprintf(stderr, "[%s] write to server fifo error: %s \n", client_indicator, strerror(errno));
     }
 
-    exit_with_failure(1, server_fifo_descriptor, NULL, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
   }
   else
   {
@@ -89,7 +86,7 @@ void read_message_from_user()
   if (fgets(msg_buff.content, MAX, stdin) == NULL)
   {
     printf("[%s] read text error.\n", client_indicator);
-    exit_with_failure(1, server_fifo_descriptor, NULL, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
   }
 
   msg_buff.client_pid = client_pid;
@@ -100,7 +97,7 @@ void create_client_fifo()
 {
   if (create_fifo(client_fifo_path, client_indicator) == -1)
   {
-    exit_with_failure(3, server_fifo_descriptor, NULL, NULL);
+    my_exit(client_indicator, 1, server_fifo_descriptor, -1, NULL);
   }
 }
 
@@ -119,7 +116,7 @@ int open_server_fifo()
       fprintf(stderr, "[%s] open server fifo error: %s\n", client_indicator, strerror(errno));
     }
 
-    exit(EXIT_FAILURE);
+    my_exit(client_indicator, 1, -1, -1, NULL);
   }
   else
   {
