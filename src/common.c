@@ -10,7 +10,7 @@ int create_fifo(const char *name, const char *indicator)
     }
     else
     {
-      fprintf(stderr, "[%s] fifo creation error \n", indicator, strerror(errno));
+      fprintf(stderr, "[%s] fifo creation error %s\n", indicator, strerror(errno));
 
       return -1; //meaning error
     }
