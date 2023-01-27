@@ -25,10 +25,9 @@ int main(int argc, char **argv)
 
   //open server fifo fd
   server_fifo_descriptor = open(SERVER_FIFO, O_WRONLY); // failure on open error, calls exit
-
   if (server_fifo_descriptor == -1)
   {
-    fprintf(stderr, "[%s] open server fifo error \n", client_indicator, strerror(errno));
+    fprintf(stderr, "[%s] open server fifo error: %s\n", client_indicator, strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -62,7 +61,7 @@ int main(int argc, char **argv)
   //read from client fifo
   if (read(client_fifo_descriptor, &msg_buff, sizeof(struct Message)) == -1)
   {
-    fprintf(stderr, "[%s] Error reading from fifo \n", client_indicator, strerror(errno));
+    fprintf(stderr, "[%s] Error reading from fifo: %s\n", client_indicator, strerror(errno));
     abort(server_fifo_descriptor, client_fifo_descriptor, client_fifo_name);
   }
 
