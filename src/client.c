@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
 void sigint_handler()
 {
-  printf("custom sigint handler: releasing resources\n");
+  printf("custom sigint handler: releasing resources...\n");
 
   if (fifo_created)
     my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
@@ -70,7 +70,7 @@ int open_client_fifo()
   if (client_fifo_descriptor == -1)
   {
     fprintf(stderr, "[%s] open client fifo error: %s\n", client_indicator, strerror(errno));
-    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
   }
 
   return client_fifo_descriptor;
@@ -89,7 +89,7 @@ void write_to_server_fifo()
       fprintf(stderr, "[%s] write to server fifo error: %s \n", client_indicator, strerror(errno));
     }
 
-    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
   }
   else
   {
@@ -99,12 +99,12 @@ void write_to_server_fifo()
 
 void read_message_from_user()
 {
-  printf("Enter the text, it'll be shrink to %d chars:\n", MAX - 1);
+  printf("Enter the text, it'll shrink to %d chars:\n", MAX - 1);
 
   if (fgets(msg_buff.content, MAX, stdin) == NULL)
   {
     printf("[%s] read text error.\n", client_indicator);
-    my_exit(client_indicator, 1, -1, -1, NULL);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, NULL);
   }
 
   msg_buff.client_pid = client_pid;
@@ -115,7 +115,7 @@ void create_client_fifo()
 {
   if (create_fifo(client_fifo_path, client_indicator) == -1)
   {
-    my_exit(client_indicator, 1, server_fifo_descriptor, -1, NULL);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, NULL);
   }
 
   fifo_created = 1;
@@ -129,14 +129,14 @@ int open_server_fifo()
   {
     if (errno == ENOENT)
     {
-      fprintf(stderr, "[%s]  server fifo not found: %s\n", client_indicator, strerror(errno));
+      fprintf(stderr, "[%s] server fifo not found: %s\n", client_indicator, strerror(errno));
     }
     else
     {
       fprintf(stderr, "[%s] open server fifo error: %s\n", client_indicator, strerror(errno));
     }
 
-    my_exit(client_indicator, 1, -1, -1, NULL);
+    my_exit(client_indicator, 1, server_fifo_descriptor, client_fifo_descriptor, NULL);
   }
   else
   {

@@ -25,17 +25,17 @@ int main(int argc, char **argv)
 
   while (read_from_server_fifo())
   {
-    client_fifo_path[0] = 0;
     printf("[%s] Received message: %s, from client %d\n", SERVER_INDICATOR, msg_buff.content, msg_buff.client_pid);
     handle_message();
     sprintf(client_fifo_path, CLIENT_FIFO_FORMAT, msg_buff.client_pid);
     client_fifo_descriptor = open_client_fifo();
     write_to_client_fifo();
     close(client_fifo_descriptor);
+    client_fifo_descriptor = -1;
   }
 
   printf("[%s] all server fifo's write ends were closed. Finishing work...\n", SERVER_INDICATOR);
-  my_exit(SERVER_INDICATOR, 0, server_fifo_descriptor, -1, SERVER_FIFO);
+  my_exit(SERVER_INDICATOR, 0, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
 }
 
 void sigint_handler()
@@ -55,7 +55,7 @@ int read_from_server_fifo()
   if (read_res == -1)
   {
     fprintf(stderr, "[%s] Error reading from server fifo: %s\n", SERVER_INDICATOR, strerror(errno));
-    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, -1, SERVER_FIFO);
+    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
   }
 
   return read_res;
@@ -89,7 +89,7 @@ int open_client_fifo()
   if (client_fifo_descriptor == -1)
   {
     fprintf(stderr, "[%s] open %s fifo error: %s \n", SERVER_INDICATOR, client_fifo_path, strerror(errno));
-    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, -1, SERVER_FIFO);
+    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
   }
 
   return client_fifo_descriptor;
@@ -106,18 +106,17 @@ void create_and_open_server_fifo()
 {
   if (create_fifo(SERVER_FIFO, SERVER_INDICATOR) == -1)
   {
-    my_exit(SERVER_INDICATOR, 1, -1, -1, NULL);
+    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, client_fifo_descriptor, NULL);
   }
 
   fifo_created = 1;
-  server_fifo_descriptor = open(SERVER_FIFO, O_RDONLY);
-
   printf("[%s] Opening server fifo in read mode, waiting for client to connect...\n", SERVER_INDICATOR);
 
+  server_fifo_descriptor = open(SERVER_FIFO, O_RDONLY);
   if (server_fifo_descriptor == -1)
   {
     fprintf(stderr, "[%s] open server fifo error: %s \n", SERVER_INDICATOR, strerror(errno));
-    my_exit(SERVER_INDICATOR, 1, -1, -1, SERVER_FIFO);
+    my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
   }
 
   sleep(10);
