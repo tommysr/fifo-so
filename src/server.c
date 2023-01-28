@@ -119,5 +119,6 @@ void create_and_open_server_fifo()
     my_exit(SERVER_INDICATOR, 1, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
   }
 
+  printf("[%s] Sleeping for 10 seconds...\n", SERVER_INDICATOR);
   sleep(10);
 }
