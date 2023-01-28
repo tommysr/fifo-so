@@ -12,7 +12,7 @@ void my_exit(const char *indicator, int failure, int server_fd, int client_fd, c
 
   if (client_fd != -1)
   {
-    if (close(server_fd) == -1)
+    if (close(client_fd) == -1)
     {
       fprintf(stderr, "[%s] client fd close error %s\n", indicator, strerror(errno));
     }
@@ -22,7 +22,7 @@ void my_exit(const char *indicator, int failure, int server_fd, int client_fd, c
   {
     if (unlink(fifo_name) == -1)
     {
-      fprintf(stderr, "[%s] unlink fifo %s failed: %s\n", indicator, *fifo_name, strerror(errno));
+      fprintf(stderr, "[%s] unlink fifo %s failed: %s\n", indicator, fifo_name, strerror(errno));
     }
   }
 

@@ -3,6 +3,7 @@
 int client_pid;
 int server_fifo_descriptor;
 int client_fifo_descriptor;
+int fifo_created;
 struct Message msg_buff;
 char client_fifo_path[256];
 char client_indicator[64];
@@ -13,23 +14,40 @@ void read_message_from_user();
 int open_client_fifo();
 void create_client_fifo();
 void read_from_client_fifo();
+void sigint_handler();
 
 int main(int argc, char **argv)
 {
+  fifo_created = -1;
+  server_fifo_descriptor = -1;
+  client_fifo_descriptor = -1;
+
+  signal(SIGINT, sigint_handler);
   client_pid = getpid();
+
+  read_message_from_user();
 
   sprintf(client_fifo_path, CLIENT_FIFO_FORMAT, client_pid);
   sprintf(client_indicator, CLIENT_INDICATOR_FORMAT, client_pid);
 
   server_fifo_descriptor = open_server_fifo();
   create_client_fifo();
-  read_message_from_user();
   write_to_server_fifo();
 
   client_fifo_descriptor = open_client_fifo();
   read_from_client_fifo();
 
   my_exit(client_indicator, 0, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
+}
+
+void sigint_handler()
+{
+  printf("custom sigint handler: releasing resources\n");
+
+  if (fifo_created)
+    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
+  else
+    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, client_fifo_path);
 }
 
 void read_from_client_fifo()
@@ -86,7 +104,7 @@ void read_message_from_user()
   if (fgets(msg_buff.content, MAX, stdin) == NULL)
   {
     printf("[%s] read text error.\n", client_indicator);
-    my_exit(client_indicator, 1, server_fifo_descriptor, -1, client_fifo_path);
+    my_exit(client_indicator, 1, -1, -1, NULL);
   }
 
   msg_buff.client_pid = client_pid;
@@ -99,6 +117,8 @@ void create_client_fifo()
   {
     my_exit(client_indicator, 1, server_fifo_descriptor, -1, NULL);
   }
+
+  fifo_created = 1;
 }
 
 int open_server_fifo()

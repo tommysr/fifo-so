@@ -11,12 +11,14 @@
 #include <limits.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
+#include <signal.h>
 
 #define SERVER_FIFO "./server_fifo"
 #define CLIENT_FIFO_FORMAT "./client_fifo_%d"
 #define CLIENT_INDICATOR_FORMAT "client_%d"
 #define SERVER_INDICATOR "SERVER"
-#define MAX 10
+#define MAX 20
 
 void my_exit(const char *indicator, int failure, int server_fd, int client_fd, const char *fifo_name);
 int create_fifo(const char *name, const char *indicator);

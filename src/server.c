@@ -2,6 +2,7 @@
 
 int server_fifo_descriptor;
 int client_fifo_descriptor;
+int fifo_created;
 struct Message msg_buff;
 char client_fifo_path[256];
 
@@ -10,13 +11,21 @@ void create_and_open_server_fifo();
 void write_to_client_fifo();
 int open_client_fifo();
 void handle_message();
+void sigint_handler();
 
 int main(int argc, char **argv)
 {
+  server_fifo_descriptor = -1;
+  client_fifo_descriptor = -1;
+  fifo_created = -1;
+
+  signal(SIGINT, sigint_handler);
+
   create_and_open_server_fifo();
 
   while (read_from_server_fifo())
   {
+    client_fifo_path[0] = 0;
     printf("[%s] Received message: %s, from client %d\n", SERVER_INDICATOR, msg_buff.content, msg_buff.client_pid);
     handle_message();
     sprintf(client_fifo_path, CLIENT_FIFO_FORMAT, msg_buff.client_pid);
@@ -27,6 +36,16 @@ int main(int argc, char **argv)
 
   printf("[%s] all server fifo's write ends were closed. Finishing work...\n", SERVER_INDICATOR);
   my_exit(SERVER_INDICATOR, 0, server_fifo_descriptor, -1, SERVER_FIFO);
+}
+
+void sigint_handler()
+{
+  printf("custom sigint handler: releasing resources\n");
+
+  if (fifo_created)
+    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
+  else
+    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, NULL);
 }
 
 int read_from_server_fifo()
@@ -90,7 +109,10 @@ void create_and_open_server_fifo()
     my_exit(SERVER_INDICATOR, 1, -1, -1, NULL);
   }
 
+  fifo_created = 1;
   server_fifo_descriptor = open(SERVER_FIFO, O_RDONLY);
+
+  printf("[%s] Opening server fifo in read mode, waiting for client to connect...\n", SERVER_INDICATOR);
 
   if (server_fifo_descriptor == -1)
   {
@@ -98,6 +120,5 @@ void create_and_open_server_fifo()
     my_exit(SERVER_INDICATOR, 1, -1, -1, SERVER_FIFO);
   }
 
-  printf("[%s] opened server fifo in read mode, waiting for clients to connect...\n", SERVER_INDICATOR);
   sleep(10);
 }
