@@ -43,9 +43,9 @@ void sigint_handler()
   printf("custom sigint handler: releasing resources\n");
 
   if (fifo_created)
-    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
+    my_exit(SERVER_INDICATOR, 0, server_fifo_descriptor, client_fifo_descriptor, SERVER_FIFO);
   else
-    my_exit(SERVER_FIFO, 0, server_fifo_descriptor, client_fifo_descriptor, NULL);
+    my_exit(SERVER_INDICATOR, 0, server_fifo_descriptor, client_fifo_descriptor, NULL);
 }
 
 int read_from_server_fifo()
